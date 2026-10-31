@@ -20,8 +20,13 @@ Un único prototipo con shell común y estas pantallas:
 
 Navegación cruzada: desde una tarea se abre su asset, documento, canción o publicación sin salir del producto.
 
-## Estilo visual
-Herramienta profesional oscura/neutra con un acento único, tipografía distinta de las genéricas, densidad cómoda, mismo lenguaje de crear/editar/guardar en todos los espacios. Cada espacio con su disposición propia (Música no parece CRM).
+## Estilo visual (según tus referencias)
+- Fondo negro #000000, tarjetas gris oscuro #333333 / gris #646464, texto blanco #F9F9F9 y gris claro #A7A7A7.
+- Acento principal naranja #E85002; degradado de marca negro → #C10801 → #F16001 → #D9C3AB para momentos destacados.
+- Acentos secundarios por espacio inspirados en tus imágenes: azul eléctrico, menta pálido, oliva, lavanda y crema (para diferenciar Agencia, Música, Finanzas, etc.).
+- Tipografía grotesca neutra estilo suizo, números gigantes como protagonistas (ej. "061", "+18.4%", "18:00").
+- Tarjetas tipo mosaico (bento) con esquinas redondeadas, botones en píldora con borde, círculos para contadores y acción "+".
+- Mismo lenguaje de crear/editar/guardar en todos los espacios; cada espacio con su disposición propia.
 
 ## Orden de ejecución (por si se agota el presupuesto)
 1. Shell + Hoy + datos demo (interfaz ya usable).
