@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgenciaRouteImport } from './routes/agencia'
+import { Route as MusicaRouteImport } from './routes/musica'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgenciaRoute = AgenciaRouteImport.update({
+  id: '/agencia',
+  path: '/agencia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MusicaRoute = MusicaRouteImport.update({
+  id: '/musica',
+  path: '/musica',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agencia': typeof AgenciaRoute
+  '/musica': typeof MusicaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agencia': typeof AgenciaRoute
+  '/musica': typeof MusicaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agencia': typeof AgenciaRoute
+  '/musica': typeof MusicaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/agencia' | '/musica'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/agencia' | '/musica'
+  id: '__root__' | '/' | '/agencia' | '/musica'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgenciaRoute: typeof AgenciaRoute
+  MusicaRoute: typeof MusicaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agencia': {
+      id: '/agencia'
+      path: '/agencia'
+      fullPath: '/agencia'
+      preLoaderRoute: typeof AgenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/musica': {
+      id: '/musica'
+      path: '/musica'
+      fullPath: '/musica'
+      preLoaderRoute: typeof MusicaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgenciaRoute: AgenciaRoute,
+  MusicaRoute: MusicaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
