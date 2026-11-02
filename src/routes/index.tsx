@@ -25,8 +25,8 @@ function Hoy() {
       </Tile>
       <Tile tone="soft" className="md:col-span-3">
         <div className="flex justify-between"><Label>Próximo</Label><span className="rounded-lg bg-blue px-2 text-sm text-foreground">+{agenda.length - 1}</span></div>
-        <Big className="mt-auto text-8xl md:text-9xl">{agenda[1].time}</Big>
-        <div className="mt-2 text-lg">{agenda[1].title}</div>
+        <Big className="mt-auto text-8xl md:text-9xl">{agenda[1]?.time}</Big>
+        <div className="mt-2 text-lg">{agenda[1]?.title}</div>
       </Tile>
 
       <Tile tone="dark" className="md:col-span-4">
