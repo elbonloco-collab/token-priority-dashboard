@@ -11,7 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgenciaRouteImport } from './routes/agencia'
+import { Route as BibliotecaRouteImport } from './routes/biblioteca'
+import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as FinanzasRouteImport } from './routes/finanzas'
+import { Route as InvestigacionRouteImport } from './routes/investigacion'
+import { Route as MarcaRouteImport } from './routes/marca'
 import { Route as MusicaRouteImport } from './routes/musica'
+import { Route as NotasRouteImport } from './routes/notas'
+import { Route as ProductividadRouteImport } from './routes/productividad'
+import { Route as PublishingRouteImport } from './routes/publishing'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +31,146 @@ const AgenciaRoute = AgenciaRouteImport.update({
   path: '/agencia',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BibliotecaRoute = BibliotecaRouteImport.update({
+  id: '/biblioteca',
+  path: '/biblioteca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientesRoute = ClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanzasRoute = FinanzasRouteImport.update({
+  id: '/finanzas',
+  path: '/finanzas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestigacionRoute = InvestigacionRouteImport.update({
+  id: '/investigacion',
+  path: '/investigacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarcaRoute = MarcaRouteImport.update({
+  id: '/marca',
+  path: '/marca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MusicaRoute = MusicaRouteImport.update({
   id: '/musica',
   path: '/musica',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotasRoute = NotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductividadRoute = ProductividadRouteImport.update({
+  id: '/productividad',
+  path: '/productividad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublishingRoute = PublishingRouteImport.update({
+  id: '/publishing',
+  path: '/publishing',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agencia': typeof AgenciaRoute
+  '/biblioteca': typeof BibliotecaRoute
+  '/clientes': typeof ClientesRoute
+  '/finanzas': typeof FinanzasRoute
+  '/investigacion': typeof InvestigacionRoute
+  '/marca': typeof MarcaRoute
   '/musica': typeof MusicaRoute
+  '/notas': typeof NotasRoute
+  '/productividad': typeof ProductividadRoute
+  '/publishing': typeof PublishingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agencia': typeof AgenciaRoute
+  '/biblioteca': typeof BibliotecaRoute
+  '/clientes': typeof ClientesRoute
+  '/finanzas': typeof FinanzasRoute
+  '/investigacion': typeof InvestigacionRoute
+  '/marca': typeof MarcaRoute
   '/musica': typeof MusicaRoute
+  '/notas': typeof NotasRoute
+  '/productividad': typeof ProductividadRoute
+  '/publishing': typeof PublishingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agencia': typeof AgenciaRoute
+  '/biblioteca': typeof BibliotecaRoute
+  '/clientes': typeof ClientesRoute
+  '/finanzas': typeof FinanzasRoute
+  '/investigacion': typeof InvestigacionRoute
+  '/marca': typeof MarcaRoute
   '/musica': typeof MusicaRoute
+  '/notas': typeof NotasRoute
+  '/productividad': typeof ProductividadRoute
+  '/publishing': typeof PublishingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agencia' | '/musica'
+  fullPaths:
+    | '/'
+    | '/agencia'
+    | '/biblioteca'
+    | '/clientes'
+    | '/finanzas'
+    | '/investigacion'
+    | '/marca'
+    | '/musica'
+    | '/notas'
+    | '/productividad'
+    | '/publishing'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agencia' | '/musica'
-  id: '__root__' | '/' | '/agencia' | '/musica'
+  to:
+    | '/'
+    | '/agencia'
+    | '/biblioteca'
+    | '/clientes'
+    | '/finanzas'
+    | '/investigacion'
+    | '/marca'
+    | '/musica'
+    | '/notas'
+    | '/productividad'
+    | '/publishing'
+  id:
+    | '__root__'
+    | '/'
+    | '/agencia'
+    | '/biblioteca'
+    | '/clientes'
+    | '/finanzas'
+    | '/investigacion'
+    | '/marca'
+    | '/musica'
+    | '/notas'
+    | '/productividad'
+    | '/publishing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgenciaRoute: typeof AgenciaRoute
+  BibliotecaRoute: typeof BibliotecaRoute
+  ClientesRoute: typeof ClientesRoute
+  FinanzasRoute: typeof FinanzasRoute
+  InvestigacionRoute: typeof InvestigacionRoute
+  MarcaRoute: typeof MarcaRoute
   MusicaRoute: typeof MusicaRoute
+  NotasRoute: typeof NotasRoute
+  ProductividadRoute: typeof ProductividadRoute
+  PublishingRoute: typeof PublishingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +189,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgenciaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/biblioteca': {
+      id: '/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/biblioteca'
+      preLoaderRoute: typeof BibliotecaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clientes': {
+      id: '/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof ClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finanzas': {
+      id: '/finanzas'
+      path: '/finanzas'
+      fullPath: '/finanzas'
+      preLoaderRoute: typeof FinanzasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investigacion': {
+      id: '/investigacion'
+      path: '/investigacion'
+      fullPath: '/investigacion'
+      preLoaderRoute: typeof InvestigacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marca': {
+      id: '/marca'
+      path: '/marca'
+      fullPath: '/marca'
+      preLoaderRoute: typeof MarcaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/musica': {
       id: '/musica'
       path: '/musica'
       fullPath: '/musica'
       preLoaderRoute: typeof MusicaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notas': {
+      id: '/notas'
+      path: '/notas'
+      fullPath: '/notas'
+      preLoaderRoute: typeof NotasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/productividad': {
+      id: '/productividad'
+      path: '/productividad'
+      fullPath: '/productividad'
+      preLoaderRoute: typeof ProductividadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publishing': {
+      id: '/publishing'
+      path: '/publishing'
+      fullPath: '/publishing'
+      preLoaderRoute: typeof PublishingRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgenciaRoute: AgenciaRoute,
+  BibliotecaRoute: BibliotecaRoute,
+  ClientesRoute: ClientesRoute,
+  FinanzasRoute: FinanzasRoute,
+  InvestigacionRoute: InvestigacionRoute,
+  MarcaRoute: MarcaRoute,
   MusicaRoute: MusicaRoute,
+  NotasRoute: NotasRoute,
+  ProductividadRoute: ProductividadRoute,
+  PublishingRoute: PublishingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
