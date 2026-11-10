@@ -334,18 +334,30 @@ function pick<T extends string>(value: string | undefined, allowed: readonly T[]
     : undefined;
 }
 
+export type WorkFilterPatch = { [K in keyof WorkFilter]?: WorkFilter[K] | undefined };
+
 export function validateSearch(search: Record<string, unknown>): SearchParams {
-  const getStr = (key: string): string | undefined => {
-    const val = search[key];
+  // Acepta tanto la forma plana (?status=draft&page=2) como la anidada
+  // que produce el serializador por defecto (?filter={...}&page=2).
+  const nestedFilter = search["filter"];
+  const filterSource: Record<string, unknown> =
+    nestedFilter !== null && typeof nestedFilter === "object" && !Array.isArray(nestedFilter)
+      ? (nestedFilter as Record<string, unknown>)
+      : search;
+
+  const read = (source: Record<string, unknown>, key: string): string | undefined => {
+    const val = source[key];
     if (val === undefined || val === null) return undefined;
     if (Array.isArray(val)) return val[0] as string;
     return String(val);
   };
+  const getStr = (key: string): string | undefined => read(filterSource, key);
+  const getTop = (key: string): string | undefined => read(search, key);
 
-  const section = pick(getStr("section"), SECTION_VALUES) ?? "overview";
+  const section = pick(getTop("section"), SECTION_VALUES) ?? "overview";
   const sortDir = getStr("sortDir") === "desc" ? "desc" : "asc";
-  const page = Math.max(1, Number(getStr("page")) || 1);
-  const pageSizeVal = Number(getStr("pageSize"));
+  const page = Math.max(1, Number(getTop("page")) || 1);
+  const pageSizeVal = Number(getTop("pageSize"));
   const pageSize = [10, 25, 50, 100].includes(pageSizeVal) ? pageSizeVal : 25;
 
   const filter: WorkFilter = {};
@@ -383,33 +395,6 @@ export function validateSearch(search: Record<string, unknown>): SearchParams {
   filter.sortDir = sortDir;
 
   return { filter, section, page, pageSize };
-}
-
-export function toFlatSearch(params: SearchParams): Record<string, string | number> {
-  const flat: Record<string, string | number> = {
-    section: params.section,
-    page: params.page,
-    pageSize: params.pageSize,
-  };
-  const f = params.filter;
-  if (f.status) flat["status"] = f.status;
-  if (f.bmi) flat["bmi"] = f.bmi;
-  if (f.mlc) flat["mlc"] = f.mlc;
-  if (f.missingIsrc) flat["missingIsrc"] = "1";
-  if (f.missingIswc) flat["missingIswc"] = "1";
-  if (f.missingMlcSongCode) flat["missingMlcSongCode"] = "1";
-  if (f.split) flat["split"] = f.split;
-  if (f.artist) flat["artist"] = f.artist;
-  if (f.composer) flat["composer"] = f.composer;
-  if (f.publisher) flat["publisher"] = f.publisher;
-  if (f.releaseFrom) flat["releaseFrom"] = f.releaseFrom;
-  if (f.releaseTo) flat["releaseTo"] = f.releaseTo;
-  if (f.hasContract !== undefined) flat["hasContract"] = f.hasContract ? "1" : "0";
-  if (f.hasSample !== undefined) flat["hasSample"] = f.hasSample ? "1" : "0";
-  if (f.search) flat["search"] = f.search;
-  if (f.sort) flat["sort"] = f.sort;
-  if (f.sortDir) flat["sortDir"] = f.sortDir;
-  return flat;
 }
 
 export function serializeSearch(params: SearchParams): string {
