@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import type { Party, PublishingWork, Section, WorkStatus } from "./types";
 import {
   formatIsrc,
@@ -9,14 +8,6 @@ import {
   validateIsrc,
   validateIswc,
 } from "./validation";
-
-export function useNow(): Date | null {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    setNow(new Date());
-  }, []);
-  return now;
-}
 
 export function makeId(): string {
   return crypto.randomUUID();
@@ -321,12 +312,29 @@ export interface SearchParams {
   pageSize: number;
 }
 
-export function validateSearch(search: Record<string, unknown>): {
-  filter: WorkFilter;
-  section: Section;
-  page: number;
-  pageSize: number;
-} {
+const SECTION_VALUES: Section[] = ["overview", "works", "people", "recordings", "imports"];
+const STATUS_VALUES: Array<WorkStatus | "all"> = [
+  "all",
+  "draft",
+  "splits_pending",
+  "splits_signed",
+  "ready_to_register",
+  "submitted",
+  "released",
+  "iswc_pending",
+  "verified",
+  "needs_correction",
+];
+const REGISTRATION_FILTER_VALUES = ["none", "submitted", "registered"] as const;
+const SORT_VALUES: WorkSort[] = ["title", "status", "completeness", "releaseDate", "updated"];
+
+function pick<T extends string>(value: string | undefined, allowed: readonly T[]): T | undefined {
+  return value !== undefined && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : undefined;
+}
+
+export function validateSearch(search: Record<string, unknown>): SearchParams {
   const getStr = (key: string): string | undefined => {
     const val = search[key];
     if (val === undefined || val === null) return undefined;
@@ -334,24 +342,24 @@ export function validateSearch(search: Record<string, unknown>): {
     return String(val);
   };
 
-  const section = (getStr("section") as Section) || "overview";
-  const sortDir = (getStr("sortDir") as "asc" | "desc") || "asc";
+  const section = pick(getStr("section"), SECTION_VALUES) ?? "overview";
+  const sortDir = getStr("sortDir") === "desc" ? "desc" : "asc";
   const page = Math.max(1, Number(getStr("page")) || 1);
   const pageSizeVal = Number(getStr("pageSize"));
   const pageSize = [10, 25, 50, 100].includes(pageSizeVal) ? pageSizeVal : 25;
 
   const filter: WorkFilter = {};
-  const status = getStr("status");
-  if (status) filter.status = status as "all" | WorkStatus;
-  const bmi = getStr("bmi");
-  if (bmi) filter.bmi = bmi as "none" | "submitted" | "registered";
-  const mlc = getStr("mlc");
-  if (mlc) filter.mlc = mlc as "none" | "submitted" | "registered";
+  const status = pick(getStr("status"), STATUS_VALUES);
+  if (status) filter.status = status;
+  const bmi = pick(getStr("bmi"), REGISTRATION_FILTER_VALUES);
+  if (bmi) filter.bmi = bmi;
+  const mlc = pick(getStr("mlc"), REGISTRATION_FILTER_VALUES);
+  if (mlc) filter.mlc = mlc;
   if (getStr("missingIsrc") === "1") filter.missingIsrc = true;
   if (getStr("missingIswc") === "1") filter.missingIswc = true;
   if (getStr("missingMlcSongCode") === "1") filter.missingMlcSongCode = true;
-  const split = getStr("split");
-  if (split) filter.split = split as "unsigned" | "signed";
+  const split = pick(getStr("split"), ["unsigned", "signed"] as const);
+  if (split) filter.split = split;
   const artist = getStr("artist");
   if (artist) filter.artist = artist;
   const composer = getStr("composer");
@@ -370,11 +378,38 @@ export function validateSearch(search: Record<string, unknown>): {
   else if (hasSample === "0") filter.hasSample = false;
   const searchStr = getStr("search");
   if (searchStr) filter.search = searchStr;
-  const sort = getStr("sort");
-  if (sort) filter.sort = sort as WorkSort;
+  const sort = pick(getStr("sort"), SORT_VALUES);
+  if (sort) filter.sort = sort;
   filter.sortDir = sortDir;
 
-  return { filter, section, page, pageSize } as unknown as SearchParams;
+  return { filter, section, page, pageSize };
+}
+
+export function toFlatSearch(params: SearchParams): Record<string, string | number> {
+  const flat: Record<string, string | number> = {
+    section: params.section,
+    page: params.page,
+    pageSize: params.pageSize,
+  };
+  const f = params.filter;
+  if (f.status) flat["status"] = f.status;
+  if (f.bmi) flat["bmi"] = f.bmi;
+  if (f.mlc) flat["mlc"] = f.mlc;
+  if (f.missingIsrc) flat["missingIsrc"] = "1";
+  if (f.missingIswc) flat["missingIswc"] = "1";
+  if (f.missingMlcSongCode) flat["missingMlcSongCode"] = "1";
+  if (f.split) flat["split"] = f.split;
+  if (f.artist) flat["artist"] = f.artist;
+  if (f.composer) flat["composer"] = f.composer;
+  if (f.publisher) flat["publisher"] = f.publisher;
+  if (f.releaseFrom) flat["releaseFrom"] = f.releaseFrom;
+  if (f.releaseTo) flat["releaseTo"] = f.releaseTo;
+  if (f.hasContract !== undefined) flat["hasContract"] = f.hasContract ? "1" : "0";
+  if (f.hasSample !== undefined) flat["hasSample"] = f.hasSample ? "1" : "0";
+  if (f.search) flat["search"] = f.search;
+  if (f.sort) flat["sort"] = f.sort;
+  if (f.sortDir) flat["sortDir"] = f.sortDir;
+  return flat;
 }
 
 export function serializeSearch(params: SearchParams): string {

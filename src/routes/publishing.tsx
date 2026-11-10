@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PublishingWorkspace } from "@/components/publishing/workspace";
-import { validateSearch } from "@/lib/publishing/queries";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/publishing")({
   head: () => ({
@@ -17,11 +15,9 @@ export const Route = createFileRoute("/publishing")({
       },
     ],
   }),
-  validateSearch,
-  component: PublishingPage,
+  component: PublishingLayout,
 });
 
-function PublishingPage() {
-  const search = Route.useSearch();
-  return <PublishingWorkspace search={search} />;
+function PublishingLayout() {
+  return <Outlet />;
 }

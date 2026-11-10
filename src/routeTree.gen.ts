@@ -20,6 +20,7 @@ import { Route as MusicaRouteImport } from './routes/musica'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as ProductividadRouteImport } from './routes/productividad'
 import { Route as PublishingRouteImport } from './routes/publishing'
+import { Route as PublishingIndexRouteImport } from './routes/publishing.index'
 import { Route as PublishingObrasWorkIdRouteImport } from './routes/publishing/obras.$workId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,6 +78,11 @@ const PublishingRoute = PublishingRouteImport.update({
   path: '/publishing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublishingIndexRoute = PublishingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublishingRoute,
+} as any)
 const PublishingObrasWorkIdRoute = PublishingObrasWorkIdRouteImport.update({
   id: '/obras/$workId',
   path: '/obras/$workId',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
   '/publishing': typeof PublishingRouteWithChildren
+  '/publishing/': typeof PublishingIndexRoute
   '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRoutesByTo {
@@ -108,7 +115,7 @@ export interface FileRoutesByTo {
   '/musica': typeof MusicaRoute
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
-  '/publishing': typeof PublishingRouteWithChildren
+  '/publishing': typeof PublishingIndexRoute
   '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRoutesById {
@@ -124,6 +131,7 @@ export interface FileRoutesById {
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
   '/publishing': typeof PublishingRouteWithChildren
+  '/publishing/': typeof PublishingIndexRoute
   '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +148,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/productividad'
     | '/publishing'
+    | '/publishing/'
     | '/publishing/obras/$workId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/productividad'
     | '/publishing'
+    | '/publishing/'
     | '/publishing/obras/$workId'
   fileRoutesById: FileRoutesById
 }
@@ -264,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublishingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publishing/': {
+      id: '/publishing/'
+      path: '/'
+      fullPath: '/publishing/'
+      preLoaderRoute: typeof PublishingIndexRouteImport
+      parentRoute: typeof PublishingRoute
+    }
     '/publishing/obras/$workId': {
       id: '/publishing/obras/$workId'
       path: '/obras/$workId'
@@ -275,10 +292,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface PublishingRouteChildren {
+  PublishingIndexRoute: typeof PublishingIndexRoute
   PublishingObrasWorkIdRoute: typeof PublishingObrasWorkIdRoute
 }
 
 const PublishingRouteChildren: PublishingRouteChildren = {
+  PublishingIndexRoute: PublishingIndexRoute,
   PublishingObrasWorkIdRoute: PublishingObrasWorkIdRoute,
 }
 
