@@ -1,6 +1,7 @@
-import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, type SearchSchemaInput } from "@tanstack/react-router";
 import { WorkSheetPage } from "@/components/publishing/WorkSheetPage";
 import { Skeleton } from "@/components/ui/skeleton";
+import { sanitizeReturnTo } from "@/lib/publishing/queries";
 
 export const Route = createFileRoute("/publishing/obras/$workId")({
   head: () => ({
@@ -8,14 +9,15 @@ export const Route = createFileRoute("/publishing/obras/$workId")({
       { title: "Hoja de Obra — CEREBRO OS" },
       {
         name: "description",
-        content: "Detalle completo de una obra musical: datos, splits, grabaciones, registros y historial.",
+        content:
+          "Detalle completo de una obra musical: datos, splits, grabaciones, registros y historial.",
       },
       { property: "og:title", content: "Hoja de Obra — CEREBRO OS" },
     ],
   }),
-  validateSearch: ({ returnTo, section }) => ({
-    returnTo: returnTo ? String(returnTo) : "/publishing",
-    section: section ? String(section) : "summary",
+  validateSearch: (search: { returnTo?: string; section?: string } & SearchSchemaInput) => ({
+    returnTo: sanitizeReturnTo(search.returnTo),
+    section: typeof search.section === "string" && search.section ? search.section : "summary",
   }),
   component: WorkSheetRoute,
 });

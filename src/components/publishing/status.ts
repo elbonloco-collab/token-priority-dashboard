@@ -1,3 +1,4 @@
+import type { RegistrationStatus } from "@/lib/publishing/types";
 import { Music, FileText, CheckCircle, ExternalLink, Loader2, AlertCircle } from "lucide-react";
 
 export type WorkStatus =
@@ -23,14 +24,70 @@ export const statusLabels: Record<WorkStatus, string> = {
   needs_correction: "Requiere corrección",
 };
 
-export const statusConfig: Record<WorkStatus, { label: string; icon: typeof Music; color: string; bgColor: string }> = {
-  draft: { label: "Borrador", icon: Music, color: "text-secondary-foreground", bgColor: "bg-secondary" },
-  splits_pending: { label: "Splits pendientes", icon: FileText, color: "text-primary", bgColor: "bg-cream" },
-  splits_signed: { label: "Splits firmados", icon: CheckCircle, color: "text-ink", bgColor: "bg-lavender" },
-  ready_to_register: { label: "Listo para registrar", icon: ExternalLink, color: "text-foreground", bgColor: "bg-blue" },
-  submitted: { label: "Enviada", icon: Loader2, color: "text-primary-foreground", bgColor: "bg-primary" },
+export const statusConfig: Record<
+  WorkStatus,
+  { label: string; icon: typeof Music; color: string; bgColor: string }
+> = {
+  draft: {
+    label: "Borrador",
+    icon: Music,
+    color: "text-secondary-foreground",
+    bgColor: "bg-secondary",
+  },
+  splits_pending: {
+    label: "Splits pendientes",
+    icon: FileText,
+    color: "text-primary",
+    bgColor: "bg-cream",
+  },
+  splits_signed: {
+    label: "Splits firmados",
+    icon: CheckCircle,
+    color: "text-ink",
+    bgColor: "bg-lavender",
+  },
+  ready_to_register: {
+    label: "Listo para registrar",
+    icon: ExternalLink,
+    color: "text-foreground",
+    bgColor: "bg-blue",
+  },
+  submitted: {
+    label: "Enviada",
+    icon: Loader2,
+    color: "text-primary-foreground",
+    bgColor: "bg-primary",
+  },
   released: { label: "Lanzada", icon: Music, color: "text-ink", bgColor: "bg-mint" },
-  iswc_pending: { label: "ISWC pendiente", icon: AlertCircle, color: "text-ink", bgColor: "bg-olive" },
+  iswc_pending: {
+    label: "ISWC pendiente",
+    icon: AlertCircle,
+    color: "text-ink",
+    bgColor: "bg-olive",
+  },
   verified: { label: "Verificada", icon: CheckCircle, color: "text-ink", bgColor: "bg-mint" },
-  needs_correction: { label: "Requiere corrección", icon: AlertCircle, color: "text-destructive-foreground", bgColor: "bg-destructive" },
+  needs_correction: {
+    label: "Requiere corrección",
+    icon: AlertCircle,
+    color: "text-destructive-foreground",
+    bgColor: "bg-destructive",
+  },
+};
+
+export type Priority = "high" | "medium" | "low";
+
+export const priorityLabels: Record<Priority, string> = {
+  high: "Alta",
+  medium: "Media",
+  low: "Baja",
+};
+
+export const registrationStatusLabels: Record<RegistrationStatus, string> = {
+  not_started: "Sin iniciar",
+  ready: "Lista",
+  submitted: "Enviada",
+  processing: "En proceso",
+  registered: "Registrada",
+  needs_correction: "Requiere corrección",
+  rejected: "Rechazada",
 };

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PublishingWork } from "@/lib/publishing/types";
 import type { Party } from "@/lib/publishing/types";
-import { computeCompleteness } from "@/lib/publishing/queries";
+import { registrationStatusLabels, statusLabels } from "./status";
+import { computeCompleteness, type WorkSort } from "@/lib/publishing/queries";
 
 interface WorksTableProps {
   works: PublishingWork[];
@@ -13,9 +14,9 @@ interface WorksTableProps {
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  sort: any;
-  sortDir: any;
-  onSortChange: (sort: any, dir: any) => void;
+  sort: WorkSort | undefined;
+  sortDir: "asc" | "desc";
+  onSortChange: (sort: WorkSort, dir: "asc" | "desc") => void;
 }
 
 function partyName(parties: Record<string, Party>, id: string): string {
@@ -68,7 +69,7 @@ export function WorksTable({
                     <div className="text-xs text-muted-foreground">{work.internalCode}</div>
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {work.status}
+                    {statusLabels[work.status]}
                   </Badge>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
@@ -146,7 +147,7 @@ export function WorksTable({
                     </td>
                     <td className="p-3">
                       <Badge variant="outline" className="text-xs">
-                        {work.status}
+                        {statusLabels[work.status]}
                       </Badge>
                     </td>
                     <td className="p-3 text-muted-foreground truncate">
@@ -223,5 +224,5 @@ export function WorksTable({
 function registrationShort(work: PublishingWork, society: "BMI" | "MLC"): string {
   const r = work.registrations.find((x) => x.society === society);
   if (!r) return "—";
-  return r.status === "registered" ? "Registrado" : r.status;
+  return registrationStatusLabels[r.status];
 }

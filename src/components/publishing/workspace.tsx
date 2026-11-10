@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState, type ChangeEvent } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 import { Tile } from "@/components/kit";
@@ -17,9 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { demoWorks } from "@/lib/publishing/demo-data";
-import { usePublishingStore, rehydrateStore, registerHydrationCallbacks } from "@/lib/publishing/store";
+import { usePublishingStore } from "@/lib/publishing/store";
 import type { PublishingWork, Section } from "@/lib/publishing/types";
-import type { WorkFilter, SearchParams, PendingTask, IssueCounts } from "@/lib/publishing/queries";
+import type {
+  WorkFilter,
+  WorkFilterPatch,
+  SearchParams,
+  PendingTask,
+  IssueCounts,
+} from "@/lib/publishing/queries";
 import {
   getIssueCounts,
   getPendingTasks,
@@ -93,6 +99,7 @@ export function PublishingWorkspaceSkeleton() {
 
 export function PublishingWorkspaceContent({ search, now }: { search: SearchParams; now: Date }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const works = usePublishingStore((s) => s.works);
   const parties = usePublishingStore((s) => s.parties);
   const [csvPreview, setCsvPreview] = useState<string[][]>([]);
@@ -128,8 +135,17 @@ export function PublishingWorkspaceContent({ search, now }: { search: SearchPara
     recordings: recordingsCount,
   };
 
-  const updateSearch = (partial: Partial<SearchParams>) => {
-    const nextFilter: WorkFilter = { ...search.filter };
+  type SearchPatch = {
+    filter?: WorkFilterPatch;
+    /** true = descarta los filtros actuales antes de aplicar `filter`. */
+    resetFilter?: boolean;
+    section?: Section;
+    page?: number;
+    pageSize?: number;
+  };
+
+  const updateSearch = (partial: SearchPatch) => {
+    const nextFilter: WorkFilter = partial.resetFilter ? {} : { ...search.filter };
     if (partial.filter) {
       for (const [key, value] of Object.entries(partial.filter)) {
         if (value === undefined || value === false || value === "" || value === "all") {
@@ -142,17 +158,17 @@ export function PublishingWorkspaceContent({ search, now }: { search: SearchPara
     const next: SearchParams = {
       filter: nextFilter,
       section: partial.section ?? search.section,
-      page: partial.page ?? (partial.filter ? 1 : search.page),
+      page: partial.page ?? (partial.filter || partial.resetFilter ? 1 : search.page),
       pageSize: partial.pageSize ?? search.pageSize,
     };
-    void navigate({ to: "/publishing", search: toFlatSearch(next), replace: true });
+    void navigate({ to: "/publishing", search: toFlatSearch(next) });
   };
 
   const openWork = (work: PublishingWork) => {
     void navigate({
       to: "/publishing/obras/$workId",
       params: { workId: work.id },
-      search: { returnTo: "/publishing", section: "summary" },
+      search: { returnTo: location.href, section: "summary" },
     });
   };
 
@@ -306,7 +322,7 @@ export function PublishingWorkspaceContent({ search, now }: { search: SearchPara
               }
             }}
             onClear={() => {
-              updateSearch({ filter: { status: "all" }, page: 1 });
+              updateSearch({ resetFilter: true });
             }}
             activeChips={[
               ...(search.filter.status && search.filter.status !== "all"
@@ -340,7 +356,7 @@ export function PublishingWorkspaceContent({ search, now }: { search: SearchPara
               savedViewsStore.save({ name, filter, createdAt: new Date().toISOString() });
             }}
             onLoadView={(filter) => {
-              updateSearch({ filter, page: 1 });
+              updateSearch({ resetFilter: true, filter, page: 1 });
             }}
           />
           <WorksTable
@@ -489,17 +505,8 @@ export function PublishingWorkspaceContent({ search, now }: { search: SearchPara
 }
 
 export function PublishingWorkspace({ search }: { search: SearchParams }) {
-  const hasHydrated = usePublishingStore((s) => s._hasHydrated);
+  // Solo se monta en cliente (ClientOnly): el store ya leyó sessionStorage de forma
+  // síncrona y `new Date()` no puede romper la hidratación. `now` se fija una vez.
   const [now] = useState(() => new Date());
-
-  useEffect(() => {
-    registerHydrationCallbacks();
-    void rehydrateStore();
-  }, []);
-
-  if (!hasHydrated) {
-    return <PublishingWorkspaceSkeleton />;
-  }
-
   return <PublishingWorkspaceContent search={search} now={now} />;
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Bookmark, BookmarkMinus } from "lucide-react";
+import { X, Bookmark, BookmarkMinus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -151,12 +151,7 @@ export function FilterBar({
           }}
         />
         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-          <span
-            className="h-4 w-4"
-            style={{
-              mask: "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2211%22 cy=%2211%22 r=%228%22></circle><line x1=%2221%22 y1=%2221%22 x2=%2216.65%22 y2=%2216.65%22></line></svg>') no-repeat center; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2211%22 cy=%2211%22 r=%228%22></circle><line x1=%2221%22 y1=%2221%22 x2=%2216.65%22 y2=%2216.65%22></line></svg>') no-repeat center;",
-            }}
-          />
+          <Search className="h-4 w-4" aria-hidden="true" />
         </div>
         {query && (
           <button

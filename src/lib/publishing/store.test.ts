@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { usePublishingStore, rehydrateStore } from "./store";
+import { usePublishingStore } from "./store";
 import type { PublishingWork, Party, Recording, Registration, SplitAgreement } from "./types";
 import { makeId } from "./queries";
 
@@ -121,7 +121,6 @@ describe("publishing store", () => {
       works: [],
       parties: [],
       auditLog: [],
-      _hasHydrated: true,
     });
   });
 
@@ -130,7 +129,7 @@ describe("publishing store", () => {
       const work = makeWork({ id: "work-1", title: "Original Title" });
       usePublishingStore.getState().upsertWork(work);
 
-      let state = usePublishingStore.getState();
+      const state = usePublishingStore.getState();
       expect(state.works).toHaveLength(1);
       const firstWork = state.works[0];
       expect(firstWork).toBeDefined();
@@ -320,66 +319,42 @@ describe("publishing store", () => {
   });
 
   describe("sessionStorage persistence", () => {
+    function readPersisted(): { works: PublishingWork[]; parties: Party[]; auditLog: unknown[] } {
+      const raw = sessionStorage.getItem("publishing-store");
+      expect(raw).toBeTruthy();
+      const parsed = JSON.parse(raw!) as {
+        state: { works: PublishingWork[]; parties: Party[]; auditLog: unknown[] };
+      };
+      return parsed.state;
+    }
+
     it("persists works to sessionStorage", () => {
       const work = makeWork({ id: "work-1" });
       usePublishingStore.getState().upsertWork(work);
 
-      const stored = sessionStorage.getItem("publishing-works");
-      expect(stored).toBeTruthy();
-      const parsed = JSON.parse(stored!);
-      expect(parsed).toHaveLength(1);
-      expect(parsed[0].id).toBe("work-1");
+      const persisted = readPersisted();
+      expect(persisted.works).toHaveLength(1);
+      expect(persisted.works[0]?.id).toBe("work-1");
     });
 
     it("persists parties to sessionStorage", () => {
       const party = makeParty({ id: "party-1" });
       usePublishingStore.getState().upsertParty(party);
 
-      const stored = sessionStorage.getItem("publishing-parties");
-      expect(stored).toBeTruthy();
-      const parsed = JSON.parse(stored!);
-      expect(parsed).toHaveLength(1);
-      expect(parsed[0].id).toBe("party-1");
+      const persisted = readPersisted();
+      expect(persisted.parties).toHaveLength(1);
+      expect(persisted.parties[0]?.id).toBe("party-1");
     });
 
     it("persists audit log to sessionStorage", () => {
-      const work = makeWork({ id: "work-1" });
-      usePublishingStore.getState().upsertWork(work);
+      usePublishingStore.getState().upsertWork(makeWork({ id: "work-1" }));
 
-      const stored = sessionStorage.getItem("publishing-audit-log");
-      expect(stored).toBeTruthy();
-      const parsed = JSON.parse(stored!);
-      expect(parsed.length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  describe("rehydration", () => {
-    it("sets _hasHydrated to true after rehydrate() even with empty storage", async () => {
-      sessionStorage.clear();
-      usePublishingStore.setState({
-        works: [],
-        parties: [],
-        auditLog: [],
-        _hasHydrated: false,
-      });
-
-      await rehydrateStore();
-
-      const state = usePublishingStore.getState();
-      expect(state._hasHydrated).toBe(true);
+      expect(readPersisted().auditLog.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("sets _hasHydrated to true after rehydrate() with existing data", async () => {
-      sessionStorage.clear();
-      const work = makeWork({ id: "work-1" });
-      usePublishingStore.getState().upsertWork(work);
-
-      // Simulate fresh load by creating new store instance (not really possible, so just test flag)
-      await rehydrateStore();
-
-      const state = usePublishingStore.getState();
-      expect(state._hasHydrated).toBe(true);
-      expect(state.works.length).toBe(1);
+    it("no expone banderas de hidratación: el store está listo desde el primer render", () => {
+      const state = usePublishingStore.getState() as unknown as Record<string, unknown>;
+      expect(state["_hasHydrated"]).toBeUndefined();
     });
   });
 });

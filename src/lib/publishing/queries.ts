@@ -336,27 +336,69 @@ function pick<T extends string>(value: string | undefined, allowed: readonly T[]
 
 export type WorkFilterPatch = { [K in keyof WorkFilter]?: WorkFilter[K] | undefined };
 
-export function validateSearch(search: Record<string, unknown>): SearchParams {
-  // Acepta tanto la forma plana (?status=draft&page=2) como la anidada
-  // que produce el serializador por defecto (?filter={...}&page=2).
-  const nestedFilter = search["filter"];
+/**
+ * Forma plana de la URL (?tab=works&status=draft&page=2). Todo es opcional:
+ * el router la usa como tipo de entrada de `navigate` y `Link`.
+ */
+export interface FlatSearchInput {
+  tab?: string | undefined;
+  section?: string | undefined;
+  status?: string | undefined;
+  bmi?: string | undefined;
+  mlc?: string | undefined;
+  missingIsrc?: boolean | string | number | undefined;
+  missingIswc?: boolean | string | number | undefined;
+  missingMlcSongCode?: boolean | string | number | undefined;
+  split?: string | undefined;
+  artist?: string | undefined;
+  composer?: string | undefined;
+  publisher?: string | undefined;
+  releaseFrom?: string | undefined;
+  releaseTo?: string | undefined;
+  hasContract?: boolean | string | number | undefined;
+  hasSample?: boolean | string | number | undefined;
+  search?: string | undefined;
+  sort?: string | undefined;
+  sortDir?: string | undefined;
+  page?: number | string | undefined;
+  pageSize?: number | string | undefined;
+}
+
+function isTruthyFlag(value: string | undefined): boolean {
+  return value === "1" || value === "true";
+}
+
+function isFalsyFlag(value: string | undefined): boolean {
+  return value === "0" || value === "false";
+}
+
+/**
+ * Convierte lo que llega de la URL (objeto plano, valores ya parseados por el router)
+ * en SearchParams. Los valores desconocidos caen al valor por defecto: nunca lanza.
+ * También acepta la forma anidada antigua (?filter={...}) para no romper enlaces viejos.
+ */
+export function validateSearch(search: FlatSearchInput | Record<string, unknown>): SearchParams {
+  const raw = search as Record<string, unknown>;
+  const nestedFilter = raw["filter"];
   const filterSource: Record<string, unknown> =
     nestedFilter !== null && typeof nestedFilter === "object" && !Array.isArray(nestedFilter)
       ? (nestedFilter as Record<string, unknown>)
-      : search;
+      : raw;
 
   const read = (source: Record<string, unknown>, key: string): string | undefined => {
     const val = source[key];
     if (val === undefined || val === null) return undefined;
-    if (Array.isArray(val)) return val[0] as string;
+    if (Array.isArray(val)) return val[0] === undefined ? undefined : String(val[0]);
+    if (typeof val === "object") return undefined;
     return String(val);
   };
   const getStr = (key: string): string | undefined => read(filterSource, key);
-  const getTop = (key: string): string | undefined => read(search, key);
+  const getTop = (key: string): string | undefined => read(raw, key);
 
-  const section = pick(getTop("section"), SECTION_VALUES) ?? "overview";
+  const section =
+    pick(getTop("tab"), SECTION_VALUES) ?? pick(getTop("section"), SECTION_VALUES) ?? "overview";
   const sortDir = getStr("sortDir") === "desc" ? "desc" : "asc";
-  const page = Math.max(1, Number(getTop("page")) || 1);
+  const page = Math.max(1, Math.floor(Number(getTop("page"))) || 1);
   const pageSizeVal = Number(getTop("pageSize"));
   const pageSize = [10, 25, 50, 100].includes(pageSizeVal) ? pageSizeVal : 25;
 
@@ -367,9 +409,9 @@ export function validateSearch(search: Record<string, unknown>): SearchParams {
   if (bmi) filter.bmi = bmi;
   const mlc = pick(getStr("mlc"), REGISTRATION_FILTER_VALUES);
   if (mlc) filter.mlc = mlc;
-  if (getStr("missingIsrc") === "1") filter.missingIsrc = true;
-  if (getStr("missingIswc") === "1") filter.missingIswc = true;
-  if (getStr("missingMlcSongCode") === "1") filter.missingMlcSongCode = true;
+  if (isTruthyFlag(getStr("missingIsrc"))) filter.missingIsrc = true;
+  if (isTruthyFlag(getStr("missingIswc"))) filter.missingIswc = true;
+  if (isTruthyFlag(getStr("missingMlcSongCode"))) filter.missingMlcSongCode = true;
   const split = pick(getStr("split"), ["unsigned", "signed"] as const);
   if (split) filter.split = split;
   const artist = getStr("artist");
@@ -383,11 +425,11 @@ export function validateSearch(search: Record<string, unknown>): SearchParams {
   const releaseTo = getStr("releaseTo");
   if (releaseTo) filter.releaseTo = releaseTo;
   const hasContract = getStr("hasContract");
-  if (hasContract === "1") filter.hasContract = true;
-  else if (hasContract === "0") filter.hasContract = false;
+  if (isTruthyFlag(hasContract)) filter.hasContract = true;
+  else if (isFalsyFlag(hasContract)) filter.hasContract = false;
   const hasSample = getStr("hasSample");
-  if (hasSample === "1") filter.hasSample = true;
-  else if (hasSample === "0") filter.hasSample = false;
+  if (isTruthyFlag(hasSample)) filter.hasSample = true;
+  else if (isFalsyFlag(hasSample)) filter.hasSample = false;
   const searchStr = getStr("search");
   if (searchStr) filter.search = searchStr;
   const sort = pick(getStr("sort"), SORT_VALUES);
@@ -397,31 +439,59 @@ export function validateSearch(search: Record<string, unknown>): SearchParams {
   return { filter, section, page, pageSize };
 }
 
+/**
+ * Inverso de validateSearch: objeto plano y mínimo (omite valores por defecto)
+ * listo para pasar a `navigate({ search })`.
+ */
+export function toFlatSearch(params: SearchParams): FlatSearchInput {
+  const f = params.filter;
+  const out: FlatSearchInput = {};
+  if (params.section !== "overview") out.tab = params.section;
+  if (f.status && f.status !== "all") out.status = f.status;
+  if (f.bmi) out.bmi = f.bmi;
+  if (f.mlc) out.mlc = f.mlc;
+  if (f.missingIsrc) out.missingIsrc = true;
+  if (f.missingIswc) out.missingIswc = true;
+  if (f.missingMlcSongCode) out.missingMlcSongCode = true;
+  if (f.split) out.split = f.split;
+  if (f.artist) out.artist = f.artist;
+  if (f.composer) out.composer = f.composer;
+  if (f.publisher) out.publisher = f.publisher;
+  if (f.releaseFrom) out.releaseFrom = f.releaseFrom;
+  if (f.releaseTo) out.releaseTo = f.releaseTo;
+  if (f.hasContract !== undefined) out.hasContract = f.hasContract;
+  if (f.hasSample !== undefined) out.hasSample = f.hasSample;
+  if (f.search) out.search = f.search;
+  if (f.sort) out.sort = f.sort;
+  if (f.sortDir === "desc") out.sortDir = "desc";
+  if (params.page > 1) out.page = params.page;
+  if (params.pageSize !== 25) out.pageSize = params.pageSize;
+  return out;
+}
+
+/**
+ * Lo que el router guarda en la URL: la forma plana mínima y ya validada.
+ * (El router escribe en la URL lo que devuelve validateSearch, por eso no puede ser anidado.)
+ */
+export function normalizeSearch(
+  search: FlatSearchInput | Record<string, unknown>,
+): FlatSearchInput {
+  return toFlatSearch(validateSearch(search));
+}
+
 export function serializeSearch(params: SearchParams): string {
   const sp = new URLSearchParams();
-  if (params.section) sp.set("section", params.section);
-  if (params.filter.status) sp.set("status", params.filter.status);
-  if (params.filter.bmi) sp.set("bmi", params.filter.bmi);
-  if (params.filter.mlc) sp.set("mlc", params.filter.mlc);
-  if (params.filter.missingIsrc) sp.set("missingIsrc", "1");
-  if (params.filter.missingIswc) sp.set("missingIswc", "1");
-  if (params.filter.missingMlcSongCode) sp.set("missingMlcSongCode", "1");
-  if (params.filter.split) sp.set("split", params.filter.split);
-  if (params.filter.artist) sp.set("artist", params.filter.artist);
-  if (params.filter.composer) sp.set("composer", params.filter.composer);
-  if (params.filter.publisher) sp.set("publisher", params.filter.publisher);
-  if (params.filter.releaseFrom) sp.set("releaseFrom", params.filter.releaseFrom);
-  if (params.filter.releaseTo) sp.set("releaseTo", params.filter.releaseTo);
-  if (params.filter.hasContract !== undefined)
-    sp.set("hasContract", params.filter.hasContract ? "1" : "0");
-  if (params.filter.hasSample !== undefined)
-    sp.set("hasSample", params.filter.hasSample ? "1" : "0");
-  if (params.filter.search) sp.set("search", params.filter.search);
-  if (params.filter.sort) sp.set("sort", params.filter.sort);
-  if (params.filter.sortDir) sp.set("sortDir", params.filter.sortDir);
-  sp.set("page", String(params.page));
-  sp.set("pageSize", String(params.pageSize));
+  for (const [key, value] of Object.entries(toFlatSearch(params))) {
+    if (value !== undefined) sp.set(key, String(value));
+  }
   return sp.toString();
+}
+
+/** Solo se permiten retornos internos al módulo (evita redirecciones a otros sitios). */
+export function sanitizeReturnTo(value: unknown): string {
+  if (typeof value !== "string") return "/publishing";
+  if (!value.startsWith("/publishing") || value.startsWith("//")) return "/publishing";
+  return value;
 }
 
 export function validateIdentifier(

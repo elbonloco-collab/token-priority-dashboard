@@ -11,6 +11,8 @@ import {
   isReadyToRegister,
   isNoResponse,
   validateSearch,
+  toFlatSearch,
+  sanitizeReturnTo,
   validateIdentifier,
   DEFAULT_NO_RESPONSE_DAYS,
   normalizeText,
@@ -754,11 +756,100 @@ describe("queries", () => {
       expect(result.pageSize).toBe(50);
     });
 
-    it("ignores unknown enum values", () => {
-      const search = { status: "invalid_status", bmi: "unknown" };
-      const result = validateSearch(search);
-      expect(result.filter.status).toBe("invalid_status");
-      expect(result.filter.bmi).toBe("unknown");
+    it("cae al valor por defecto con valores desconocidos (nunca pantalla en blanco)", () => {
+      const result = validateSearch({
+        tab: "inexistente",
+        status: "invalid_status",
+        bmi: "unknown",
+        page: "abc",
+        pageSize: 7,
+        sort: "nope",
+      });
+      expect(result.section).toBe("overview");
+      expect(result.filter.status).toBeUndefined();
+      expect(result.filter.bmi).toBeUndefined();
+      expect(result.filter.sort).toBeUndefined();
+      expect(result.page).toBe(1);
+      expect(result.pageSize).toBe(25);
+    });
+
+    it("lee la pestaña desde ?tab= y mantiene ?section= como alias antiguo", () => {
+      expect(validateSearch({ tab: "works" }).section).toBe("works");
+      expect(validateSearch({ section: "people" }).section).toBe("people");
+      expect(validateSearch({ tab: "works", section: "people" }).section).toBe("works");
+    });
+
+    it("acepta banderas como booleanos reales (lo que entrega el router) o como 1/0", () => {
+      const result = validateSearch({
+        missingIsrc: true,
+        missingIswc: 1,
+        hasContract: false,
+        hasSample: "1",
+      });
+      expect(result.filter.missingIsrc).toBe(true);
+      expect(result.filter.missingIswc).toBe(true);
+      expect(result.filter.hasContract).toBe(false);
+      expect(result.filter.hasSample).toBe(true);
+    });
+
+    it("no lanza con objetos, arreglos vacíos ni valores nulos", () => {
+      expect(() =>
+        validateSearch({ status: {}, page: [], search: null, artist: undefined }),
+      ).not.toThrow();
+    });
+
+    it("convierte un número de la URL en texto de búsqueda (?search=2024 llega como número)", () => {
+      expect(validateSearch({ search: 2024 }).filter.search).toBe("2024");
+    });
+  });
+
+  describe("toFlatSearch", () => {
+    it("omite los valores por defecto", () => {
+      expect(toFlatSearch(validateSearch({}))).toEqual({});
+    });
+
+    it("hace ida y vuelta con validateSearch conservando filtros, orden y página", () => {
+      const original = validateSearch({
+        tab: "works",
+        status: "ready_to_register",
+        bmi: "none",
+        missingIsrc: true,
+        hasContract: false,
+        search: "luna",
+        sort: "title",
+        sortDir: "desc",
+        page: 3,
+        pageSize: 50,
+      });
+      const flat = toFlatSearch(original);
+      expect(flat).toMatchObject({ tab: "works", status: "ready_to_register", page: 3 });
+      expect(validateSearch(flat)).toEqual(original);
+    });
+
+    it("no emite status=all", () => {
+      const flat = toFlatSearch({
+        filter: { status: "all" },
+        section: "works",
+        page: 1,
+        pageSize: 25,
+      });
+      expect(flat).toEqual({ tab: "works" });
+    });
+  });
+
+  describe("sanitizeReturnTo", () => {
+    it("conserva rutas internas del módulo con sus filtros", () => {
+      expect(sanitizeReturnTo("/publishing?tab=works&status=draft")).toBe(
+        "/publishing?tab=works&status=draft",
+      );
+    });
+
+    it("rechaza destinos externos o ajenos al módulo", () => {
+      expect(sanitizeReturnTo("https://evil.example")).toBe("/publishing");
+      expect(sanitizeReturnTo("//evil.example")).toBe("/publishing");
+      expect(sanitizeReturnTo("/finanzas")).toBe("/publishing");
+      expect(sanitizeReturnTo(undefined)).toBe("/publishing");
+      expect(sanitizeReturnTo(42)).toBe("/publishing");
     });
   });
 

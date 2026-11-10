@@ -21,12 +21,12 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { PublishingWork, Party } from "@/lib/publishing/types";
 import { IdentifierDialog } from "./IdentifierDialog";
+import { PriorityBadge } from "./PriorityBadge";
 import {
   getPrimaryBlocker,
   getIssueCounts,
   DEFAULT_NO_RESPONSE_DAYS,
   computeCompleteness,
-  useNow,
   type BlockerType,
   type BlockerInfo,
 } from "@/lib/publishing/queries";
@@ -112,7 +112,11 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const TAB_CONFIG: { key: FilterTab; label: string; countKey: keyof ReturnType<typeof getIssueCounts> }[] = [
+const TAB_CONFIG: {
+  key: FilterTab;
+  label: string;
+  countKey: keyof ReturnType<typeof getIssueCounts>;
+}[] = [
   { key: "all", label: "Todas", countKey: "without-isrc" },
   { key: "correction", label: "Requieren corrección", countKey: "correction" },
   { key: "splits", label: "Splits", countKey: "unsigned" },
@@ -175,23 +179,44 @@ function WorkRow({
 
   if (isMobile) {
     return (
-      <div className="border-b last:border-0 hover:bg-accent/30 transition-colors" style={{ minHeight: "88px" }}>
+      <div
+        className="border-b last:border-0 hover:bg-accent/30 transition-colors"
+        style={{ minHeight: "88px" }}
+      >
         <div className="p-3 flex items-start gap-3">
-          <div className={cn("flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium", statusConfig.bgColor, statusConfig.color)}>
+          <div
+            className={cn(
+              "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium",
+              statusConfig.bgColor,
+              statusConfig.color,
+            )}
+          >
             <StatusIcon className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-medium truncate">{work.title}</span>
-              <Badge variant="outline" className={cn("text-xs whitespace-nowrap", statusConfig.bgColor.replace("bg-", "bg-"), statusConfig.color.replace("text-", "text-"))}>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs whitespace-nowrap",
+                  statusConfig.bgColor.replace("bg-", "bg-"),
+                  statusConfig.color.replace("text-", "text-"),
+                )}
+              >
                 {statusConfig.label}
               </Badge>
             </div>
             <div className="text-xs text-muted-foreground truncate">{work.internalCode}</div>
             <div className="mt-1 h-1.5 bg-muted/50 rounded-full w-3/4">
-              <div className="h-1.5 bg-primary rounded-full" style={{ width: `${computeCompleteness(work)}%` }} />
+              <div
+                className="h-1.5 bg-primary rounded-full"
+                style={{ width: `${computeCompleteness(work)}%` }}
+              />
             </div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">{computeCompleteness(work)}% completo</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              {computeCompleteness(work)}% completo
+            </div>
           </div>
         </div>
         <div className="px-3 pb-3 flex items-center justify-between border-t border-muted/30">
@@ -219,45 +244,67 @@ function WorkRow({
   }
 
   return (
-    <tr className="border-b last:border-0 hover:bg-accent/30 transition-colors" style={{ height: "48px" }}>
+    <tr
+      className="border-b last:border-0 hover:bg-accent/30 transition-colors"
+      style={{ height: "48px" }}
+    >
       <td className="p-3">
         <div className="flex items-center gap-3">
-          <div className={cn("flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium", statusConfig.bgColor, statusConfig.color)}>
+          <div
+            className={cn(
+              "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium",
+              statusConfig.bgColor,
+              statusConfig.color,
+            )}
+          >
             <StatusIcon className="w-5 h-5" />
           </div>
           <div>
             <div className="font-medium truncate max-w-[280px]">{work.title}</div>
-            <div className="text-xs text-muted-foreground truncate max-w-[280px]">{work.internalCode}</div>
+            <div className="text-xs text-muted-foreground truncate max-w-[280px]">
+              {work.internalCode}
+            </div>
           </div>
         </div>
       </td>
       <td className="p-3">
-        <Badge variant="outline" className={cn("text-xs whitespace-nowrap", statusConfig.bgColor.replace("bg-", "bg-"), statusConfig.color.replace("text-", "text-"))}>
+        <Badge
+          variant="outline"
+          className={cn(
+            "text-xs whitespace-nowrap",
+            statusConfig.bgColor.replace("bg-", "bg-"),
+            statusConfig.color.replace("text-", "text-"),
+          )}
+        >
           {statusConfig.label}
         </Badge>
       </td>
       <td className="p-3 w-40">
         <div className="h-1.5 bg-muted/50 rounded-full">
-          <div className="h-1.5 bg-primary rounded-full" style={{ width: `${computeCompleteness(work)}%` }} />
+          <div
+            className="h-1.5 bg-primary rounded-full"
+            style={{ width: `${computeCompleteness(work)}%` }}
+          />
         </div>
-        <div className="text-[10px] text-muted-foreground text-right mt-0.5">{computeCompleteness(work)}%</div>
+        <div className="text-[10px] text-muted-foreground text-right mt-0.5">
+          {computeCompleteness(work)}%
+        </div>
       </td>
       <td className="p-3">
-        <Badge variant="outline" className={cn("text-xs whitespace-nowrap",
-          blocker.priority === "high" && "bg-destructive/10 text-destructive border-destructive/20",
-          blocker.priority === "medium" && "bg-amber/10 text-amber-700 border-amber/20",
-          blocker.priority === "low" && "bg-green/10 text-green-700 border-green/20"
-        )}>
-          {blocker.priority === "high" && <AlertTriangle className="w-3 h-3 mr-1" />}
-          {blocker.priority === "medium" && <Clock className="w-3 h-3 mr-1" />}
-          {blocker.priority === "low" && <CheckCircle className="w-3 h-3 mr-1" />}
-          {blocker.priority.charAt(0).toUpperCase() + blocker.priority.slice(1)}
-        </Badge>
+        <PriorityBadge priority={blocker.priority} />
       </td>
-      <td className="p-3 text-muted-foreground text-xs max-w-[200px] truncate" title={blocker.waitingText + (blocker.additionalBlockers.length ? " · " + blocker.additionalBlockers.join(", ") : "")}>
+      <td
+        className="p-3 text-muted-foreground text-xs max-w-[200px] truncate"
+        title={
+          blocker.waitingText +
+          (blocker.additionalBlockers.length ? " · " + blocker.additionalBlockers.join(", ") : "")
+        }
+      >
         {blocker.waitingText}
         {blocker.additionalBlockers.length > 0 && (
-          <span className="text-primary ml-1" title={blocker.additionalBlockers.join(", ")}>+{blocker.additionalBlockers.length} más</span>
+          <span className="text-primary ml-1" title={blocker.additionalBlockers.join(", ")}>
+            +{blocker.additionalBlockers.length} más
+          </span>
         )}
       </td>
       <td className="p-3">
@@ -321,9 +368,18 @@ function WorkCard({
   };
 
   return (
-    <div className="border rounded-xl bg-card p-3 hover:shadow-md transition-shadow" style={{ minWidth: "280px", maxWidth: "320px" }}>
+    <div
+      className="border rounded-xl bg-card p-3 hover:shadow-md transition-shadow"
+      style={{ minWidth: "280px", maxWidth: "320px" }}
+    >
       <div className="flex items-start gap-3 mb-3">
-        <div className={cn("flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-base font-medium", statusConfig.bgColor, statusConfig.color)}>
+        <div
+          className={cn(
+            "flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-base font-medium",
+            statusConfig.bgColor,
+            statusConfig.color,
+          )}
+        >
           <StatusIcon className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">
@@ -331,29 +387,43 @@ function WorkCard({
           <div className="text-xs text-muted-foreground truncate">{work.internalCode}</div>
         </div>
       </div>
-      <Badge variant="outline" className={cn("text-xs mb-2", statusConfig.bgColor.replace("bg-", "bg-"), statusConfig.color.replace("text-", "text-"))}>
+      <Badge
+        variant="outline"
+        className={cn(
+          "text-xs mb-2",
+          statusConfig.bgColor.replace("bg-", "bg-"),
+          statusConfig.color.replace("text-", "text-"),
+        )}
+      >
         {statusConfig.label}
       </Badge>
       <div className="mb-2">
         <div className="h-1.5 bg-muted/50 rounded-full">
-          <div className="h-1.5 bg-primary rounded-full" style={{ width: `${computeCompleteness(work)}%` }} />
+          <div
+            className="h-1.5 bg-primary rounded-full"
+            style={{ width: `${computeCompleteness(work)}%` }}
+          />
         </div>
-        <div className="text-[10px] text-muted-foreground text-right mt-0.5">{computeCompleteness(work)}% completo</div>
+        <div className="text-[10px] text-muted-foreground text-right mt-0.5">
+          {computeCompleteness(work)}% completo
+        </div>
       </div>
-      <div className="mb-3 text-xs text-muted-foreground" title={blocker.waitingText + (blocker.additionalBlockers.length ? " · " + blocker.additionalBlockers.join(", ") : "")}>
+      <div
+        className="mb-3 text-xs text-muted-foreground"
+        title={
+          blocker.waitingText +
+          (blocker.additionalBlockers.length ? " · " + blocker.additionalBlockers.join(", ") : "")
+        }
+      >
         {blocker.waitingText}
         {blocker.additionalBlockers.length > 0 && (
-          <span className="text-primary ml-1" title={blocker.additionalBlockers.join(", ")}>+{blocker.additionalBlockers.length} más</span>
+          <span className="text-primary ml-1" title={blocker.additionalBlockers.join(", ")}>
+            +{blocker.additionalBlockers.length} más
+          </span>
         )}
       </div>
       <div className="flex items-center justify-between">
-        <Badge variant="outline" className={cn("text-xs",
-          blocker.priority === "high" && "bg-destructive/10 text-destructive border-destructive/20",
-          blocker.priority === "medium" && "bg-amber/10 text-amber-700 border-amber/20",
-          blocker.priority === "low" && "bg-green/10 text-green-700 border-green/20"
-        )}>
-          {blocker.priority.charAt(0).toUpperCase() + blocker.priority.slice(1)}
-        </Badge>
+        <PriorityBadge priority={blocker.priority} />
         <Button
           size="sm"
           variant="outline"
@@ -369,7 +439,7 @@ function WorkCard({
   );
 }
 
-function PendingQueueContent({
+export function PendingQueue({
   works,
   parties,
   counts,
@@ -379,15 +449,23 @@ function PendingQueueContent({
 }: PendingQueueProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [sortConfig, setSortConfig] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "priority", dir: "desc" });
-  const [openDialog, setOpenDialog] = useState<{ work: PublishingWork | null; kind: "isrc" | "iswc" } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string; dir: "asc" | "desc" }>({
+    key: "priority",
+    dir: "desc",
+  });
+  const [openDialog, setOpenDialog] = useState<{
+    work: PublishingWork | null;
+    kind: "isrc" | "iswc";
+  } | null>(null);
 
   interface WorkWithBlocker {
     work: PublishingWork;
     blocker: ReturnType<typeof getPrimaryBlocker> | null;
   }
 
-  const worksWithBlockers = useMemo<{ work: PublishingWork; blocker: ReturnType<typeof getPrimaryBlocker> | null }[]>(() => {
+  const worksWithBlockers = useMemo<
+    { work: PublishingWork; blocker: ReturnType<typeof getPrimaryBlocker> | null }[]
+  >(() => {
     return works.map((work) => ({
       work,
       blocker: getPrimaryBlocker(work, now, DEFAULT_NO_RESPONSE_DAYS),
@@ -395,7 +473,10 @@ function PendingQueueContent({
   }, [works, now]);
 
   const filteredWorks = useMemo(() => {
-    let result = worksWithBlockers.filter((w): w is { work: PublishingWork; blocker: ReturnType<typeof getPrimaryBlocker> } => w.blocker !== null);
+    let result = worksWithBlockers.filter(
+      (w): w is { work: PublishingWork; blocker: ReturnType<typeof getPrimaryBlocker> } =>
+        w.blocker !== null,
+    );
 
     if (activeTab !== "all") {
       result = result.filter(({ blocker }) => {
@@ -455,14 +536,6 @@ function PendingQueueContent({
     if (!tabConfig) return 0;
     return counts[tabConfig.countKey] || 0;
   };
-
-  if (now === null) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-center text-muted-foreground">Cargando…</div>
-      </div>
-    );
-  }
 
   if (isEmpty) {
     return (
@@ -545,15 +618,42 @@ function PendingQueueContent({
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="p-3 text-left cursor-pointer hover:bg-muted/30" onClick={() => handleSort("title")}>
-                  Obra {sortConfig.key === "title" && (sortConfig.dir === "asc" ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDown className="inline w-3 h-3 ml-1" />)}
+                <th
+                  className="p-3 text-left cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort("title")}
+                >
+                  Obra{" "}
+                  {sortConfig.key === "title" &&
+                    (sortConfig.dir === "asc" ? (
+                      <ChevronUp className="inline w-3 h-3 ml-1" />
+                    ) : (
+                      <ChevronDown className="inline w-3 h-3 ml-1" />
+                    ))}
                 </th>
-                <th className="p-3 text-left cursor-pointer hover:bg-muted/30" onClick={() => handleSort("status")}>
-                  Estado {sortConfig.key === "status" && (sortConfig.dir === "asc" ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDown className="inline w-3 h-3 ml-1" />)}
+                <th
+                  className="p-3 text-left cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort("status")}
+                >
+                  Estado{" "}
+                  {sortConfig.key === "status" &&
+                    (sortConfig.dir === "asc" ? (
+                      <ChevronUp className="inline w-3 h-3 ml-1" />
+                    ) : (
+                      <ChevronDown className="inline w-3 h-3 ml-1" />
+                    ))}
                 </th>
                 <th className="p-3 text-left w-40">Progreso</th>
-                <th className="p-3 text-left cursor-pointer hover:bg-muted/30" onClick={() => handleSort("priority")}>
-                  Prioridad {sortConfig.key === "priority" && (sortConfig.dir === "asc" ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDown className="inline w-3 h-3 ml-1" />)}
+                <th
+                  className="p-3 text-left cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort("priority")}
+                >
+                  Prioridad{" "}
+                  {sortConfig.key === "priority" &&
+                    (sortConfig.dir === "asc" ? (
+                      <ChevronUp className="inline w-3 h-3 ml-1" />
+                    ) : (
+                      <ChevronDown className="inline w-3 h-3 ml-1" />
+                    ))}
                 </th>
                 <th className="p-3 text-left">Esperando</th>
                 <th className="p-3 text-left">Artista</th>
@@ -574,11 +674,17 @@ function PendingQueueContent({
             </tbody>
           </table>
           <div className="p-3 flex items-center justify-between text-xs text-muted-foreground border-t">
-            <span>Mostrando {filteredWorks.length} de {works.length} obras</span>
+            <span>
+              Mostrando {filteredWorks.length} de {works.length} obras
+            </span>
             {filteredWorks.length > 25 && (
               <div className="flex gap-1">
-                <Button variant="outline" size="sm" disabled>Anterior</Button>
-                <Button variant="outline" size="sm">Siguiente</Button>
+                <Button variant="outline" size="sm" disabled>
+                  Anterior
+                </Button>
+                <Button variant="outline" size="sm">
+                  Siguiente
+                </Button>
               </div>
             )}
           </div>
@@ -603,7 +709,10 @@ function PendingQueueContent({
           work={openDialog.work!}
           kind={openDialog.kind}
           onSave={(value) => {
-            onAction(openDialog.work!, openDialog.kind === "isrc" ? "Agregar ISRC" : "Registrar identificador");
+            onAction(
+              openDialog.work!,
+              openDialog.kind === "isrc" ? "Agregar ISRC" : "Registrar identificador",
+            );
             setOpenDialog(null);
           }}
           open={true}
@@ -612,24 +721,4 @@ function PendingQueueContent({
       )}
     </div>
   );
-}
-
-export function PendingQueue({
-  works,
-  parties,
-  counts,
-  onAction,
-  onOpenIdentifier,
-}: PendingQueueProps) {
-  const now = useNow();
-
-  if (now === null) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-center text-muted-foreground">Cargando…</div>
-      </div>
-    );
-  }
-
-  return <PendingQueueContent works={works} parties={parties} counts={counts} now={now} onAction={onAction} onOpenIdentifier={onOpenIdentifier} />;
 }
