@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import type { Party, PublishingWork, Section, WorkStatus } from "./types";
 import {
   formatIsrc,
@@ -9,14 +8,6 @@ import {
   validateIsrc,
   validateIswc,
 } from "./validation";
-
-export function useNow(): Date | null {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    setNow(new Date());
-  }, []);
-  return now;
-}
 
 export function makeId(): string {
   return crypto.randomUUID();
