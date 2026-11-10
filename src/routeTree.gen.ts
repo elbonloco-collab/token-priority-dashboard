@@ -20,6 +20,7 @@ import { Route as MusicaRouteImport } from './routes/musica'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as ProductividadRouteImport } from './routes/productividad'
 import { Route as PublishingRouteImport } from './routes/publishing'
+import { Route as PublishingObrasWorkIdRouteImport } from './routes/publishing/obras.$workId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,11 @@ const PublishingRoute = PublishingRouteImport.update({
   path: '/publishing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublishingObrasWorkIdRoute = PublishingObrasWorkIdRouteImport.update({
+  id: '/obras/$workId',
+  path: '/obras/$workId',
+  getParentRoute: () => PublishingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,7 +94,8 @@ export interface FileRoutesByFullPath {
   '/musica': typeof MusicaRoute
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
-  '/publishing': typeof PublishingRoute
+  '/publishing': typeof PublishingRouteWithChildren
+  '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,7 +108,8 @@ export interface FileRoutesByTo {
   '/musica': typeof MusicaRoute
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
-  '/publishing': typeof PublishingRoute
+  '/publishing': typeof PublishingRouteWithChildren
+  '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,7 +123,8 @@ export interface FileRoutesById {
   '/musica': typeof MusicaRoute
   '/notas': typeof NotasRoute
   '/productividad': typeof ProductividadRoute
-  '/publishing': typeof PublishingRoute
+  '/publishing': typeof PublishingRouteWithChildren
+  '/publishing/obras/$workId': typeof PublishingObrasWorkIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/productividad'
     | '/publishing'
+    | '/publishing/obras/$workId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/productividad'
     | '/publishing'
+    | '/publishing/obras/$workId'
   id:
     | '__root__'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/productividad'
     | '/publishing'
+    | '/publishing/obras/$workId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -170,7 +182,7 @@ export interface RootRouteChildren {
   MusicaRoute: typeof MusicaRoute
   NotasRoute: typeof NotasRoute
   ProductividadRoute: typeof ProductividadRoute
-  PublishingRoute: typeof PublishingRoute
+  PublishingRoute: typeof PublishingRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -252,8 +264,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublishingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publishing/obras/$workId': {
+      id: '/publishing/obras/$workId'
+      path: '/obras/$workId'
+      fullPath: '/publishing/obras/$workId'
+      preLoaderRoute: typeof PublishingObrasWorkIdRouteImport
+      parentRoute: typeof PublishingRoute
+    }
   }
 }
+
+interface PublishingRouteChildren {
+  PublishingObrasWorkIdRoute: typeof PublishingObrasWorkIdRoute
+}
+
+const PublishingRouteChildren: PublishingRouteChildren = {
+  PublishingObrasWorkIdRoute: PublishingObrasWorkIdRoute,
+}
+
+const PublishingRouteWithChildren = PublishingRoute._addFileChildren(
+  PublishingRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -266,7 +297,7 @@ const rootRouteChildren: RootRouteChildren = {
   MusicaRoute: MusicaRoute,
   NotasRoute: NotasRoute,
   ProductividadRoute: ProductividadRoute,
-  PublishingRoute: PublishingRoute,
+  PublishingRoute: PublishingRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,15 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Plus } from "lucide-react";
-import { Tile, Big, Label, Status } from "@/components/kit";
+import { Tile, Label, Status } from "@/components/kit";
 import { agenda, tasks, finances, tracks } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Hoy — CEREBRO OS" },
-      { name: "description", content: "Tu centro de orientación diaria: agenda, prioridades, entregas y Donna." },
+      {
+        name: "description",
+        content: "Tu centro de orientación diaria: agenda, prioridades, entregas y Donna.",
+      },
       { property: "og:title", content: "Hoy — CEREBRO OS" },
-      { property: "og:description", content: "Centro de orientación diaria del super workspace CEREBRO OS." },
+      {
+        property: "og:description",
+        content: "Centro de orientación diaria del super workspace CEREBRO OS.",
+      },
     ],
   }),
   component: Hoy,
@@ -18,19 +24,41 @@ export const Route = createFileRoute("/")({
 function Hoy() {
   const pending = tasks.filter((t) => t.status !== "Listo");
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Tile tone="orange" className="min-h-64 md:col-span-3">
-        <div className="flex justify-between"><Label>Sábado · 31 oct</Label><span className="text-sm">+3 entregas</span></div>
-        <div className="mt-auto"><Label className="opacity-90">Buenos días, Bismarck</Label><Big className="text-7xl md:text-8xl">Hoy</Big></div>
+    <div className="grid grid-cols-1 gap-3 items-stretch lg:grid-cols-12">
+      <Tile tone="orange" className="lg:col-span-6">
+        <div className="flex flex-col justify-between h-full">
+          <div className="flex justify-between">
+            <Label>Sábado · 31 oct</Label>
+            <span className="text-sm">+3 entregas</span>
+          </div>
+          <div className="mt-auto">
+            <Label className="opacity-90">Buenos días, Bismarck</Label>
+            <div className="display-num text-5xl">Hoy</div>
+          </div>
+        </div>
       </Tile>
-      <Tile tone="soft" className="md:col-span-3">
-        <div className="flex justify-between"><Label>Próximo</Label><span className="rounded-lg bg-blue px-2 text-sm text-foreground">+{agenda.length - 1}</span></div>
-        <Big className="mt-auto text-8xl md:text-9xl">{agenda[1]?.time}</Big>
-        <div className="mt-2 text-lg">{agenda[1]?.title}</div>
+      <Tile tone="soft" className="lg:col-span-6">
+        <div className="flex flex-col justify-between h-full">
+          <div className="flex justify-between">
+            <Label>Próximo</Label>
+            <span className="rounded-lg bg-blue px-2 text-xs text-foreground">
+              +{agenda.length - 1}
+            </span>
+          </div>
+          <div className="mt-auto">
+            <div className="display-num text-4xl">{agenda[1]?.time}</div>
+            <div className="mt-1 text-sm">{agenda[1]?.title}</div>
+          </div>
+        </div>
       </Tile>
 
-      <Tile tone="dark" className="md:col-span-4">
-        <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-medium">Prioridades</h2><Link to="/productividad" className="text-sm text-muted-foreground hover:text-primary">Ver todo</Link></div>
+      <Tile tone="dark" className="lg:col-span-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-medium">Prioridades</h2>
+          <Link to="/productividad" className="text-xs text-muted-foreground hover:text-primary">
+            Ver todo
+          </Link>
+        </div>
         <ul className="divide-y divide-border">
           {pending.slice(0, 5).map((t) => (
             <li key={t.id}>
@@ -45,33 +73,60 @@ function Hoy() {
           ))}
         </ul>
       </Tile>
-      <Tile tone="blue" className="md:col-span-2">
-        <Label>Contadores</Label>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          {[pending.length, tracks.length, 12].map((n, i) => (
-            <div key={i} className="grid aspect-square place-items-center rounded-full bg-foreground/15 display-num text-5xl">{n}</div>
-          ))}
-          <button className="grid aspect-square place-items-center rounded-full bg-foreground/40"><Plus className="h-10 w-10" /></button>
+      <Tile tone="blue" className="lg:col-span-4">
+        <div className="h-full flex flex-col items-center justify-center gap-2">
+          <Label className="text-xs">Contadores</Label>
+          <div className="grid grid-cols-2 gap-3">
+            {[pending.length, tracks.length, 12].map((n, i) => (
+              <div
+                key={i}
+                className="size-14 rounded-full bg-foreground/15 display-num text-xl place-items-center"
+              >
+                {n}
+              </div>
+            ))}
+            <button className="size-14 rounded-full bg-foreground/40">
+              <Plus className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </Tile>
 
-      <Tile tone="mint" className="md:col-span-2">
-        <Label>Ingresos del mes</Label>
-        <Big className="mt-auto">+{finances.growth}%</Big>
-        <Link to="/finanzas" className="mt-3 text-sm underline">Abrir Finanzas</Link>
+      <Tile tone="mint" className="lg:col-span-4">
+        <div className="flex flex-col gap-2">
+          <Label>Ingresos del mes</Label>
+          <div className="display-num text-4xl">+{finances.growth}%</div>
+          <Link to="/finanzas" className="mt-1 text-sm underline">
+            Abrir Finanzas
+          </Link>
+        </div>
       </Tile>
-      <Tile tone="dark" className="md:col-span-2">
-        <Label>Agenda</Label>
-        <ul className="mt-3 space-y-2">
-          {agenda.map((a) => (
-            <li key={a.time} className="flex gap-3 text-sm"><span className="w-12 font-mono text-primary">{a.time}</span><span className="flex-1">{a.title}</span></li>
-          ))}
-        </ul>
+      <Tile tone="dark" className="lg:col-span-4">
+        <div className="flex flex-col gap-2">
+          <Label>Agenda</Label>
+          <ul className="mt-1 space-y-1.5">
+            {agenda.map((a) => (
+              <li key={a.time} className="flex gap-3 text-sm">
+                <span className="w-12 font-mono text-primary">{a.time}</span>
+                <span className="flex-1 truncate">{a.title}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Tile>
-      <Tile tone="gradient" className="md:col-span-2">
-        <Label className="opacity-90">Donna sugiere</Label>
-        <p className="mt-3 text-lg leading-snug">Completar metadatos de «Medianoche» desbloquea la subida del martes.</p>
-        <Link to="/musica" className="mt-auto inline-flex w-fit rounded-full border border-current px-4 py-1.5 text-sm">Ir a Música</Link>
+      <Tile tone="gradient" className="lg:col-span-4">
+        <div className="flex flex-col gap-2">
+          <Label className="opacity-90">Donna sugiere</Label>
+          <p className="text-sm leading-snug">
+            Completar metadatos de «Medianoche» desbloquea la subida del martes.
+          </p>
+          <Link
+            to="/musica"
+            className="mt-1 inline-flex w-fit rounded-full border border-current px-3 py-1 text-sm"
+          >
+            Ir a Música
+          </Link>
+        </div>
       </Tile>
     </div>
   );

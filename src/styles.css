@@ -42,7 +42,7 @@
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.625rem;
   --background: oklch(0 0 0);
   --foreground: oklch(0.982 0 0);
   --card: oklch(0.21 0 0);
@@ -78,8 +78,8 @@
 
 @utility display-num {
   font-weight: 500;
-  letter-spacing: -0.06em;
-  line-height: 0.85;
+  letter-spacing: -0.03em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -93,4 +93,37 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+@utility card-compact {
+  background-color: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 0.875rem;
+}
+
+@utility kpi-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 0.75rem 0.875rem;
+}
+
+@utility page-title {
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
 }
